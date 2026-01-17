@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres-with-fk:
+    image: postgres:16
+    container_name: postgres-with-fk
+    environment:
+      POSTGRES_USER: benchmark
+      POSTGRES_PASSWORD: benchmark123
+      POSTGRES_DB: benchmark_with_fk
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-fk-data:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=200
+      -c work_mem=16MB
+      -c maintenance_work_mem=128MB
+      -c effective_cache_size=1GB
+
+  postgres-without-fk:
+    image: postgres:16
+    container_name: postgres-without-fk
+    environment:
+      POSTGRES_USER: benchmark
+      POSTGRES_PASSWORD: benchmark123
+      POSTGRES_DB: benchmark_without_fk
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-no-fk-data:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=200
+      -c work_mem=16MB
+      -c maintenance_work_mem=128MB
+      -c effective_cache_size=1GB
+
+volumes:
+  postgres-fk-data:
+  postgres-no-fk-data:

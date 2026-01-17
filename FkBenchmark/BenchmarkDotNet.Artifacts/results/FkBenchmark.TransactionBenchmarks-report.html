@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>FkBenchmark.TransactionBenchmarks-20260117-163848</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
+11th Gen Intel Core i5-1135G7 2.40GHz (Max: 1.46GHz), 1 CPU, 8 logical and 4 physical cores
+.NET SDK 8.0.417
+  [Host]     : .NET 8.0.23 (8.0.23, 8.0.2325.60607), X64 RyuJIT x86-64-v4
+  DefaultJob : .NET 8.0.23 (8.0.23, 8.0.2325.60607), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                  </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Rank</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;Batch Insert WITHOUT FK&#39;</td><td>114.2 ms</td><td>2.24 ms</td><td>3.56 ms</td><td>1</td><td>1000.0000</td><td>4.2 MB</td>
+</tr><tr><td>&#39;Batch Insert WITH FK&#39;</td><td>151.6 ms</td><td>2.79 ms</td><td>2.61 ms</td><td>2</td><td>1000.0000</td><td>4.2 MB</td>
+</tr><tr><td>&#39;Concurrent Insert WITHOUT FK&#39;</td><td>817.2 ms</td><td>24.57 ms</td><td>67.67 ms</td><td>3</td><td>1000.0000</td><td>4.19 MB</td>
+</tr><tr><td>&#39;Concurrent Insert WITH FK&#39;</td><td>818.5 ms</td><td>24.74 ms</td><td>71.38 ms</td><td>3</td><td>1000.0000</td><td>4.19 MB</td>
+</tr><tr><td>&#39;Mixed Operations WITHOUT FK&#39;</td><td>2,697.4 ms</td><td>63.19 ms</td><td>180.27 ms</td><td>4</td><td>-</td><td>2.94 MB</td>
+</tr><tr><td>&#39;Mixed Operations WITH FK&#39;</td><td>2,870.9 ms</td><td>74.87 ms</td><td>214.82 ms</td><td>4</td><td>-</td><td>2.94 MB</td>
+</tr><tr><td>&#39;Sequential Insert WITHOUT FK&#39;</td><td>5,012.4 ms</td><td>119.40 ms</td><td>340.66 ms</td><td>5</td><td>1000.0000</td><td>4.2 MB</td>
+</tr><tr><td>&#39;Sequential Insert WITH FK&#39;</td><td>5,286.2 ms</td><td>122.30 ms</td><td>344.96 ms</td><td>5</td><td>1000.0000</td><td>4.2 MB</td>
+</tr></tbody></table>
+</body>
+</html>
