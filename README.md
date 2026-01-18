@@ -1,11 +1,23 @@
 # Foreign Key Performance Benchmark
 
-This project benchmarks the performance impact of Foreign Key constraints using .NET 8, BenchmarkDotNet, and PostgreSQL 16.
+> _What happens when you question database dogma?_
 
-**Complete benchmark suite covering:**
-- ✅ **Part 1**: INSERT operations (Sequential, Batch, Concurrent, Mixed)
-- ✅ **Part 2**: SELECT operations (Simple SELECT, JOIN, Aggregation, Analytical)
-- ✅ **Part 3**: DELETE operations (CASCADE, Manual cleanup, Soft delete)
+This project was born from a simple shock: discovering a production `transactions` table without Foreign Keys. This seemed to contradict everything taught in database courses. When I asked our CTO why, his answer was simple: **"Performance."**
+
+That response motivated me to spend a weekend building comprehensive benchmarks to measure the **real, measurable impact** of Foreign Keys on common database operations.
+
+**Technologies used:**
+- **.NET 8** (production stack)
+- **BenchmarkDotNet 0.15.8** (rigorous statistical measurement)
+- **PostgreSQL 16** (industry-standard RDBMS)
+- **Docker** (reproducible environments)
+
+**What I discovered:**
+- ✅ **Part 1 (INSERT)**: 0.16%-32.7% overhead (workload-dependent)
+- ✅ **Part 2 (SELECT)**: ~0% overhead (< 1% difference)
+- ✅ **Part 3 (DELETE)**: CASCADE 24% slower at 10K scale (NOT 20×), Soft Delete 33× faster
+
+**The conclusion**: Context matters more than rules. Measure, don't assume.
 
 ## 📋 Prerequisites
 
@@ -242,22 +254,26 @@ cd scripts
 
 ## 📚 Related Articles
 
-This benchmark accompanies a three-part article series:
+This benchmark accompanies a three-part article series that documents my journey from shock to understanding:
 
-**Part 1: The INSERT Story**
+**[Part 1: The INSERT Story](/posts/foreign-keys-vs-performance-part-1)**
+- The shock of finding a production DB without FKs
 - FK overhead on write operations (0.16%-32.7%)
 - Sequential vs Batch vs Concurrent
 - When to remove Foreign Keys
 
-**Part 2: The SELECT Story**
-- FK impact on SELECT/JOIN queries (~0%)
+**[Part 2: The SELECT Story](/posts/foreign-keys-vs-performance-part-2)**
+- Do FKs slow down SELECT queries? (~0% impact!)
 - Indexes matter, constraints don't
 - Read-heavy systems should keep FKs
 
-**Part 3: The DELETE Story**
-- CASCADE delete performance (6% faster at 100 txns, 24% slower at 10K)
+**[Part 3: The DELETE Story](/posts/foreign-keys-vs-performance-part-3)**
+- Busting the CASCADE "20× slower" myth (only 24%)
 - Soft delete is 33× faster (9.75ms vs 326.73ms)
 - Lock contention considerations
+- My final conclusion: question everything
+
+**The journey**: From academic assumptions to production reality, measured with real benchmarks.
 
 ## 🤝 Contributing
 
