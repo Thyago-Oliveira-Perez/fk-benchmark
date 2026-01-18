@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ReadBenchmarks.ReadOperationsBench-20260117-215221</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
+11th Gen Intel Core i5-1135G7 2.40GHz (Max: 2.36GHz), 1 CPU, 8 logical and 4 physical cores
+.NET SDK 8.0.122
+  [Host]     : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v4
+  Job-CKVGHD : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>IterationCount=100  RunStrategy=Monitoring  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;Simple SELECT - WITH FK&#39;</td><td>3.925 ms</td><td>9.975 ms</td><td>29.411 ms</td><td>0.7465 ms</td><td>6.25 KB</td>
+</tr><tr><td>&#39;Simple SELECT - WITHOUT FK&#39;</td><td>4.015 ms</td><td>9.289 ms</td><td>27.389 ms</td><td>0.8778 ms</td><td>6.55 KB</td>
+</tr><tr><td>&#39;Multi-Table JOIN - WITH FK&#39;</td><td>4.756 ms</td><td>9.550 ms</td><td>28.157 ms</td><td>1.6236 ms</td><td>6.94 KB</td>
+</tr><tr><td>&#39;Multi-Table JOIN - WITHOUT FK&#39;</td><td>4.513 ms</td><td>8.762 ms</td><td>25.836 ms</td><td>1.6227 ms</td><td>7.24 KB</td>
+</tr><tr><td>&#39;Aggregation Query - WITH FK&#39;</td><td>3.683 ms</td><td>8.553 ms</td><td>25.217 ms</td><td>0.8629 ms</td><td>4.55 KB</td>
+</tr><tr><td>&#39;Aggregation Query - WITHOUT FK&#39;</td><td>3.874 ms</td><td>9.433 ms</td><td>27.813 ms</td><td>0.8235 ms</td><td>4.24 KB</td>
+</tr><tr><td>&#39;Complex Analytical - WITH FK&#39;</td><td>26.215 ms</td><td>10.569 ms</td><td>31.163 ms</td><td>23.2584 ms</td><td>4.49 KB</td>
+</tr><tr><td>&#39;Complex Analytical - WITHOUT FK&#39;</td><td>26.340 ms</td><td>10.957 ms</td><td>32.307 ms</td><td>23.5062 ms</td><td>4.8 KB</td>
+</tr></tbody></table>
+</body>
+</html>

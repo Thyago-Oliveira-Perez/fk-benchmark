@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ReadBenchmarks.CascadeBench-20260117-215241</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
+11th Gen Intel Core i5-1135G7 2.40GHz (Max: 2.36GHz), 1 CPU, 8 logical and 4 physical cores
+.NET SDK 8.0.122
+  [Host]     : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v4
+  Job-VNIRUV : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>IterationCount=20  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                           </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>&#39;CASCADE Delete (100 txns) - WITH FK&#39;</td><td>44.693 ms</td><td>0.5813 ms</td><td>0.6694 ms</td><td>44.746 ms</td><td>8.38 KB</td>
+</tr><tr><td>&#39;Manual Delete (100 txns) - WITHOUT FK&#39;</td><td>47.655 ms</td><td>0.7229 ms</td><td>0.8035 ms</td><td>47.464 ms</td><td>9.72 KB</td>
+</tr><tr><td>&#39;CASCADE Delete (1K txns) - WITH FK&#39;</td><td>61.905 ms</td><td>3.1951 ms</td><td>3.6795 ms</td><td>59.888 ms</td><td>8.35 KB</td>
+</tr><tr><td>&#39;Manual Delete (1K txns) - WITHOUT FK&#39;</td><td>43.176 ms</td><td>0.8002 ms</td><td>0.9215 ms</td><td>43.292 ms</td><td>9.72 KB</td>
+</tr><tr><td>&#39;CASCADE Delete (10K txns) - WITH FK&#39;</td><td>326.730 ms</td><td>6.6990 ms</td><td>7.1679 ms</td><td>325.857 ms</td><td>8.44 KB</td>
+</tr><tr><td>&#39;Manual Delete (10K txns) - WITHOUT FK&#39;</td><td>249.792 ms</td><td>114.5645 ms</td><td>122.5827 ms</td><td>198.678 ms</td><td>9.72 KB</td>
+</tr><tr><td>&#39;Soft Delete (no CASCADE) - WITH FK&#39;</td><td>9.751 ms</td><td>0.2150 ms</td><td>0.2111 ms</td><td>9.804 ms</td><td>2.95 KB</td>
+</tr><tr><td>&#39;Soft Delete (no CASCADE) - WITHOUT FK&#39;</td><td>10.158 ms</td><td>0.2548 ms</td><td>0.2617 ms</td><td>10.089 ms</td><td>3.1 KB</td>
+</tr></tbody></table>
+</body>
+</html>

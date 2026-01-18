@@ -12,10 +12,12 @@ CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL
 );
 
 CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_deleted_at ON users(id) WHERE deleted_at IS NULL;
 
 -- Accounts table (users can have multiple accounts)
 CREATE TABLE accounts (
@@ -25,6 +27,7 @@ CREATE TABLE accounts (
     balance DECIMAL(18,2) DEFAULT 0,
     account_type VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -35,7 +38,8 @@ CREATE TABLE merchants (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL
 );
 
 -- Categories table
@@ -44,6 +48,7 @@ CREATE TABLE categories (
     name VARCHAR(100) NOT NULL UNIQUE,
     parent_category_id BIGINT,
     created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_categories_parent FOREIGN KEY (parent_category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
@@ -59,6 +64,7 @@ CREATE TABLE transactions (
     transaction_type VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP DEFAULT NULL,
     -- Multiple FK constraints that need validation
     CONSTRAINT fk_transactions_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_transactions_account_id FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,

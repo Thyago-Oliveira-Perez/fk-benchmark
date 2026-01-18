@@ -6,12 +6,12 @@ using BenchmarkDotNet.Order;
 using Npgsql;
 using System.Data;
 
-namespace FkBenchmark;
+namespace InsertBenchmarks;
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [RankColumn]
-public class TransactionBenchmarks
+public class InsertBench
 {
     private const string ConnStringWithFk = "Host=localhost;Port=5432;Database=benchmark_with_fk;Username=benchmark;Password=benchmark123";
     private const string ConnStringWithoutFk = "Host=localhost;Port=5433;Database=benchmark_without_fk;Username=benchmark;Password=benchmark123";

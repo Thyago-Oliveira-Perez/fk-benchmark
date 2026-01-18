@@ -1,26 +1,39 @@
 # Foreign Key Performance Benchmark
 
-This project benchmarks the performance impact of Foreign Key constraints in high-transaction scenarios using .NET 10, BenchmarkDotNet, and PostgreSQL 16.
+This project benchmarks the performance impact of Foreign Key constraints using .NET 8, BenchmarkDotNet, and PostgreSQL 16.
 
-**Schema Version**: **4 Foreign Keys** per transaction for realistic testing.
+**Complete benchmark suite covering:**
+- ✅ **Part 1**: INSERT operations (Sequential, Batch, Concurrent, Mixed)
+- ✅ **Part 2**: SELECT operations (Simple SELECT, JOIN, Aggregation, Analytical)
+- ✅ **Part 3**: DELETE operations (CASCADE, Manual cleanup, Soft delete)
 
 ## 📋 Prerequisites
 
 - Docker and Docker Compose
-- .NET 10 SDK (or .NET 8+)
+- .NET 8 SDK
 - mise (for .NET version management - optional)
 
 ## 🚀 Quick Start
 
-We provide automated scripts for easy setup and cleanup:
-
 ```bash
-# Run the setup script to start databases and initialize data
+# Clone the repository
+git clone https://github.com/Thyago-Oliveira-Perez/fk-benchmark.git
+cd fk-benchmark
+
+# Setup databases and seed data
 cd scripts
 ./setup.sh
 
-# Run the benchmark
-cd ../FkBenchmark
+# Run Part 1: INSERT benchmarks
+cd ../InsertBenchmarks
+dotnet run -c Release
+
+# Run Part 2: SELECT benchmarks
+cd ../ReadBenchmarks
+dotnet run -c Release
+
+# Run Part 3: DELETE benchmarks
+cd ../DeleteBenchmarks
 dotnet run -c Release
 
 # Clean up when done
@@ -30,16 +43,11 @@ cd ../scripts
 
 ## 📊 What It Tests
 
-The benchmark runs comprehensive tests with **4 Foreign Key validations** per insert:
+### Part 1: INSERT Operations
 
-- **Sequential Inserts**: Single-threaded inserts (1,000 operations)
-- **Batch Inserts**: Transactional bulk inserts (1,000 operations)
-- **Concurrent Inserts**: Multi-threaded inserts with 10 threads (1,000 total operations)
-- **Mixed Operations**: Combined insert and select queries (500 operations)
+Located in `InsertBenchmarks/InsertBench.cs`
 
-### Schema: Realistic Multi-FK Design
-
-Each transaction validates 4 Foreign Keys:
+The benchmark tests **4 Foreign Key validations** per insert:
 
 ```sql
 CREATE TABLE transactions (
@@ -47,128 +55,159 @@ CREATE TABLE transactions (
     account_id BIGINT NOT NULL,   -- FK #2 → accounts
     merchant_id BIGINT NOT NULL,  -- FK #3 → merchants
     category_id BIGINT NOT NULL,  -- FK #4 → categories
-    -- 4 FK validations per INSERT!
 );
 ```
 
-Each scenario is tested against:
-- ✅ Database **WITH** 4 Foreign Key constraints (port 5432)
-- ❌ Database **WITHOUT** Foreign Key constraints (port 5433)
+**Scenarios tested:**
+- **Sequential Inserts**: Single-threaded (1,000 operations)
+- **Batch Inserts**: Transactional bulk inserts (1,000 operations)
+- **Concurrent Inserts**: Multi-threaded with 10 threads (1,000 total)
+- **Mixed Operations**: Combined INSERT + SELECT (500 operations)
 
-## �� Understanding Results
+**Results:**
+- Sequential: 5.5% overhead
+- Batch: 32.7% overhead
+- Concurrent: 0.16% overhead
+- Mixed: 6.4% overhead
 
-BenchmarkDotNet will output detailed statistics including:
+### Part 2: SELECT Operations
 
-- **Mean**: Average execution time
-- **Error**: Standard error of the mean
-- **StdDev**: Standard deviation
-- **Rank**: Relative performance ranking
-- **Gen0/Gen1/Gen2**: Garbage collection statistics
-- **Allocated**: Memory allocation per operation
+Located in `ReadBenchmarks/ReadOperationsBench.cs`
 
-Example output:
-```
-|                          Method |     Mean |   Error |  StdDev | Rank |   Gen0 | Allocated |
-|-------------------------------- |---------:|--------:|--------:|-----:|-------:|----------:|
-| Batch Insert WITHOUT FK         | 145.2 ms | 2.8 ms  | 7.9 ms  |    1 | 1.2000 |   3.2 KB  |
-| Batch Insert WITH FK            | 178.6 ms | 3.5 ms  | 10.1 ms |    2 | 1.5000 |   3.8 KB  |
-```
+**Scenarios tested:**
+- **Simple SELECT**: Query by FK column with LIMIT (0.75ms vs 0.88ms)
+- **Multi-Table JOIN**: 4-way JOIN to enrich transaction data (1.62ms - identical)
+- **Aggregation Query**: SUM/COUNT with GROUP BY (0.86ms vs 0.82ms)
+- **Complex Analytical**: Date grouping + aggregation (23.26ms vs 23.51ms)
 
-**Expected Performance Gains**: With 4 FKs, you should see **15-30% faster** performance without FK constraints, especially in concurrent scenarios.
+**Key Finding**: Foreign Keys have ~0% impact on SELECT queries (< 1% difference)
+
+### Part 3: DELETE Operations
+
+Located in `DeleteBenchmarks/DeleteBench.cs`
+
+**Scenarios tested:**
+- **Small volume**: 100 transactions per user
+- **Medium volume**: 1,000 transactions per user
+- **Large volume**: 10,000 transactions per user
+- **Soft Delete**: UPDATE deleted_at (instant)
+
+**Comparisons:**
+- CASCADE delete (WITH FK)
+- Manual delete (WITHOUT FK)
+- Soft delete (both databases)
+
+**Results:**
+- 100 txns: CASCADE 6% faster (44.69ms vs 47.66ms)
+- 1K txns: Manual 30% faster (43.18ms vs 61.91ms)
+- 10K txns: Manual 24% faster (249.79ms vs 326.73ms)
+- Soft Delete: 33× faster than CASCADE (9.75ms vs 326.73ms)
 
 ## 🗂️ Project Structure
 
 ```
 fk-benchmark/
-├── docker-compose.yml          # PostgreSQL containers configuration
-├── .mise.toml                  # .NET version configuration
-├── README.md                   # This file
+├── docker-compose.yml              # PostgreSQL containers (WITH/WITHOUT FK)
+├── fk-benchmark.sln                # Solution with 3 projects
+├── .mise.toml                      # .NET 8 configuration
+├── README.md                       # This file
 ├── sql/
-│   ├── setup-with-fk.sql      # Schema WITH 4 Foreign Keys
-│   └── setup-without-fk.sql   # Schema WITHOUT Foreign Keys
+│   ├── setup-with-fk.sql          # Schema WITH 4 Foreign Keys
+│   └── setup-without-fk.sql       # Schema WITHOUT Foreign Keys
 ├── scripts/
-│   ├── setup.sh               # Automated setup script
-│   └── cleanup.sh             # Automated cleanup script
-└── FkBenchmark/
-    ├── Program.cs             # Entry point
-    ├── TransactionBenchmarks.cs # Benchmark implementations
-    └── FkBenchmark.csproj     # Project configuration
+│   ├── setup.sh                   # Automated setup
+│   ├── cleanup.sh                 # Cleanup all resources
+│   └── seed-transactions.sh       # Seed 1M transactions
+├── InsertBenchmarks/              # Part 1: INSERT operations
+│   ├── Program.cs
+│   ├── InsertBench.cs
+│   └── InsertBenchmarks.csproj
+├── ReadBenchmarks/                # Part 2: SELECT operations
+│   ├── Program.cs
+│   ├── ReadOperationsBench.cs
+│   └── ReadBenchmarks.csproj
+└── DeleteBenchmarks/              # Part 3: DELETE operations
+    ├── Program.cs
+    ├── DeleteBench.cs
+    └── DeleteBenchmarks.csproj
 ```
+
+## 📊 Understanding Results
+
+BenchmarkDotNet outputs detailed statistics:
+
+- **Mean**: Average execution time
+- **Error**: Standard error of the mean
+- **StdDev**: Standard deviation
+- **Allocated**: Memory allocation per operation
+
+**Expected results:**
+- **Part 1 (INSERT)**: 0.16%-32.7% overhead WITH FK (workload-dependent)
+- **Part 2 (SELECT)**: ~0% overhead WITH FK (indexes matter, not constraints)
+- **Part 3 (DELETE)**: 24% slower CASCADE at 10K scale (NOT 20×), Soft Delete 33× faster
 
 ## 🛠️ Scripts
 
 ### setup.sh
-Automates the entire setup process:
-- Checks if Docker is running
-- Starts PostgreSQL containers
+Automates setup:
+- Starts PostgreSQL containers (WITH FK on 5432, WITHOUT FK on 5433)
 - Waits for databases to be ready
-- Initializes both databases with:
+- Seeds data:
   - 100,000 users
   - 250,000 accounts
   - 5,000 merchants
   - 10 categories
 
+### seed-transactions.sh
+Seeds 1M transactions for READ benchmarks:
+- 1,000,000 transactions distributed across users
+- Transaction types: PURCHASE, REFUND, TRANSFER
+- Status: COMPLETED, PENDING, FAILED
+
 ### cleanup.sh
 Removes all resources:
-- Stops and removes Docker containers
-- Deletes database volumes
-- Cleans up all test data
+- Stops containers
+- Removes volumes
+- Cleans test data
 
 ## 🔧 Configuration
 
 ### Database Configuration
-Both PostgreSQL instances run with identical configurations for fair comparison:
+Both PostgreSQL 16 instances run with identical settings:
 - Shared buffers: 256MB
 - Max connections: 200
 - Work memory: 16MB
-- Maintenance work memory: 128MB
 - Effective cache size: 1GB
 
 ### Connection Strings
-- **With FK**: `localhost:5432` - Database: `benchmark_with_fk`
-- **Without FK**: `localhost:5433` - Database: `benchmark_without_fk`
+- **With FK**: `localhost:5432` 
+- **Without FK**: `localhost:5433`
 - **User**: `benchmark` / **Password**: `benchmark123`
 
 ## 📝 Test Data
 
-Each database is seeded with:
-- **100,000 users** (id, email, name, created_at)
-- **250,000 accounts** (user_id, account_number, balance, account_type)
-- **5,000 merchants** (name, category)
-- **10 categories** (name, parent_category_id)
-- Indexes on commonly queried fields
-- Identical schema except for FK constraints
-
-## 🧹 Clean Up
-
-### Quick Cleanup
-```bash
-cd scripts
-./cleanup.sh
-```
-
-### Manual Cleanup
-```bash
-# Stop and remove containers with volumes
-docker compose down -v
-
-# Verify containers are removed
-docker ps -a | grep postgres
-```
+- **100,000 users** (id, email, name, created_at, deleted_at)
+- **250,000 accounts** (2.5 accounts per user on average)
+- **5,000 merchants** (retail, restaurant, online, services)
+- **10 categories** (groceries, dining, entertainment, etc.)
+- **1,000,000 transactions** (for READ benchmarks)
+- **Indexes** on all FK columns (both databases)
+- **Partial index** on deleted_at WHERE deleted_at IS NULL
 
 ## 🎯 Benchmarking Tips
 
-1. **Run in Release mode** for accurate performance metrics
-2. **Close other applications** to reduce system noise
-3. **Run multiple times** to ensure consistency
-4. **Take screenshots** of results for comparison
-5. **Note your hardware specs** when sharing results
+1. **Run in Release mode** (`dotnet run -c Release`)
+2. **Close other applications** to reduce noise
+3. **Run multiple times** for consistency
+4. **Note your hardware** when sharing results
+5. **Check Docker resources** (ensure adequate CPU/memory)
+6. **Part 3 uses real COMMITs** (no ROLLBACK, measures true cost)
 
 ## 🐛 Troubleshooting
 
 ### Databases won't start
 ```bash
-# Check if ports are already in use
+# Check if ports are in use
 lsof -i :5432
 lsof -i :5433
 
@@ -182,35 +221,52 @@ docker compose restart
 docker logs postgres-with-fk
 docker logs postgres-without-fk
 
-# Verify databases are ready
+# Verify ready
 docker exec postgres-with-fk pg_isready -U benchmark
 ```
 
 ### Benchmark fails
 ```bash
-# Rebuild the project
-cd FkBenchmark
+# Rebuild
 dotnet clean
 dotnet restore
 dotnet build -c Release
 ```
 
-## 📚 Related Article
+### Missing transactions for Part 2
+```bash
+# Seed 1M transactions
+cd scripts
+./seed-transactions.sh
+```
 
-This benchmark accompanies the article "Foreign Keys vs Performance: When Database Theory Meets Reality" which explores:
-- Technical deep-dive into FK overhead
-- Real-world performance impacts
+## 📚 Related Articles
+
+This benchmark accompanies a three-part article series:
+
+**Part 1: The INSERT Story**
+- FK overhead on write operations (0.16%-32.7%)
+- Sequential vs Batch vs Concurrent
 - When to remove Foreign Keys
-- Application-level integrity patterns
+
+**Part 2: The SELECT Story**
+- FK impact on SELECT/JOIN queries (~0%)
+- Indexes matter, constraints don't
+- Read-heavy systems should keep FKs
+
+**Part 3: The DELETE Story**
+- CASCADE delete performance (6% faster at 100 txns, 24% slower at 10K)
+- Soft delete is 33× faster (9.75ms vs 326.73ms)
+- Lock contention considerations
 
 ## 🤝 Contributing
 
-Feel free to:
-- Add new benchmark scenarios
-- Test with different database configurations
-- Compare other databases (MySQL, SQL Server, etc.)
-- Share your results and hardware specs
+Contributions welcome:
+- New benchmark scenarios
+- Different database versions
+- Other databases (MySQL, SQL Server, etc.)
+- Share your results with hardware specs
 
 ## 📄 License
 
-MIT License - Feel free to use and modify for your own benchmarking needs.
+MIT License - Free to use and modify.
